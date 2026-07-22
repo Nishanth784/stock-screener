@@ -174,6 +174,17 @@ STATUS_CSS = {
 }
 
 
+def _flatten_html(s: str) -> str:
+    """Collapse a multi-line, indented HTML f-string to a single line with no
+    leading whitespace or blank lines. Streamlit's markdown renderer runs content
+    through a CommonMark parser before the raw-HTML passthrough; a blank/whitespace
+    -only line followed by 4+ spaces of indentation is interpreted as an indented
+    code block, which escapes the HTML instead of rendering it. Flattening avoids
+    that entirely."""
+    lines = [line.strip() for line in s.strip().splitlines()]
+    return " ".join(line for line in lines if line)
+
+
 def render_gauge(value, threshold, status):
     _, fill_class, _ = STATUS_CSS[status]
     if value is None:
@@ -181,13 +192,13 @@ def render_gauge(value, threshold, status):
     max_scale = threshold * 2.0 if threshold > 0 else max(value, 0.01) * 2
     fill_pct = max(0.0, min(value / max_scale, 1.0)) * 100
     marker_pct = max(0.0, min(threshold / max_scale, 1.0)) * 100
-    return f"""
+    return _flatten_html(f"""
     <div class="gauge-track">
         <div class="gauge-fill {fill_class}" style="width:{fill_pct:.1f}%;"></div>
         <div class="gauge-marker" style="left:{marker_pct:.1f}%;"></div>
     </div>
     <div class="gauge-caption"><span>0%</span><span>threshold {threshold*100:.0f}%</span><span>{max_scale*100:.0f}%</span></div>
-    """
+    """)
 
 
 def render_rule_card(rule):
@@ -210,7 +221,7 @@ def render_rule_card(rule):
         <div class="rule-note">{rule.note}</div>
     </div>
     """
-    return html
+    return _flatten_html(html)
 
 
 def render_business_card(business):
@@ -227,7 +238,7 @@ def render_business_card(business):
         <div class="rule-note">{business.note}</div>
     </div>
     """
-    return html
+    return _flatten_html(html)
 
 
 # ---------------------------------------------------------------------------
@@ -292,17 +303,15 @@ if active_ticker:
         else:
             card_class, badge_class, badge_label = VERDICT_CSS[result.verdict]
             reasons_html = "".join(f"<li>{r}</li>" for r in result.reasons)
-            st.markdown(
-                f"""
+            verdict_html = f"""
                 <div class="verdict-card {card_class}">
                     <span class="verdict-badge {badge_class}">{badge_label}</span>
                     <div class="company-name">{result.company_name} ({result.ticker})</div>
                     <div class="company-sub">Screened against {STANDARD_NAME}</div>
                     <ul class="reasons">{reasons_html}</ul>
                 </div>
-                """,
-                unsafe_allow_html=True,
-            )
+                """
+            st.markdown(_flatten_html(verdict_html), unsafe_allow_html=True)
 
             if result.company_data.warnings:
                 with st.expander("Data quality notes for this ticker"):
