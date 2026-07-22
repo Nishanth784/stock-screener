@@ -62,10 +62,13 @@ div[data-testid="stButton"] > button {
     border: 1px solid #232b34 !important;
     color: #cfd8e0 !important;
     border-radius: 999px !important;
-    padding: 2px 10px !important;
-    font-size: 0.78rem !important;
+    padding: 2px 6px !important;
+    font-size: 0.74rem !important;
     min-height: 1.9rem !important;
     line-height: 1.4 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 div[data-testid="stButton"] > button:hover {
     border-color: #22c55e !important;
@@ -291,7 +294,7 @@ with st.form(key="search_form", clear_on_submit=False):
         submitted = st.form_submit_button("Screen", use_container_width=True)
 
 st.caption("Try:")
-CHIPS_PER_ROW = 10
+CHIPS_PER_ROW = 8
 chip_rows = [EXAMPLE_TICKERS[i:i + CHIPS_PER_ROW] for i in range(0, len(EXAMPLE_TICKERS), CHIPS_PER_ROW)]
 for row in chip_rows:
     cols = st.columns(CHIPS_PER_ROW)
