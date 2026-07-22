@@ -54,6 +54,30 @@ header {visibility: hidden;}
     margin: 2px 4px 2px 0;
 }
 
+/* Clickable ticker chips (rendered as real st.button widgets so they're
+   actually interactive, not just decorative spans). Scoped to stButton so
+   the Screen form-submit button (a different widget type) is unaffected. */
+div[data-testid="stButton"] > button {
+    background: #141a21 !important;
+    border: 1px solid #232b34 !important;
+    color: #cfd8e0 !important;
+    border-radius: 999px !important;
+    padding: 2px 10px !important;
+    font-size: 0.78rem !important;
+    min-height: 1.9rem !important;
+    line-height: 1.4 !important;
+}
+div[data-testid="stButton"] > button:hover {
+    border-color: #22c55e !important;
+    color: #4ade80 !important;
+    background: #141a21 !important;
+}
+div[data-testid="stButton"] > button:focus:not(:active) {
+    border-color: #22c55e !important;
+    color: #4ade80 !important;
+}
+div[data-testid="stHorizontalBlock"] { gap: 0.35rem !important; }
+
 /* Verdict card */
 .verdict-card {
     border-radius: 20px; padding: 1.4rem 1.5rem; margin: 1rem 0 1.2rem 0;
@@ -266,8 +290,15 @@ with st.form(key="search_form", clear_on_submit=False):
     with col2:
         submitted = st.form_submit_button("Screen", use_container_width=True)
 
-chip_html = " ".join(f'<span class="ticker-chip">{t}</span>' for t in EXAMPLE_TICKERS)
-st.markdown(f'<div style="margin-bottom:0.6rem;">Try: {chip_html}</div>', unsafe_allow_html=True)
+st.caption("Try:")
+CHIPS_PER_ROW = 10
+chip_rows = [EXAMPLE_TICKERS[i:i + CHIPS_PER_ROW] for i in range(0, len(EXAMPLE_TICKERS), CHIPS_PER_ROW)]
+for row in chip_rows:
+    cols = st.columns(CHIPS_PER_ROW)
+    for col, t in zip(cols, row):
+        with col:
+            if st.button(t, key=f"chip_{t}", use_container_width=True):
+                st.session_state["ticker"] = t
 
 with st.expander("⚙️ Advanced: adjust screening thresholds"):
     st.caption(f"Default methodology: **{STANDARD_NAME}**. Adjust below to model a different provider's rules.")
